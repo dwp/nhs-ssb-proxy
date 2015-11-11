@@ -264,18 +264,11 @@ module.exports = {
 	/**
 	* Pretty print an error
 	*/
-	prettyPrintError: function (errrorObject) {
-		if (errrorObject) {
-			var name = errrorObject.name;
-			name = (name) ? String(name) : 'Error';
-
-			var msg = errrorObject.message;
-			msg = (msg) ? String(msg) : 'undefined';
-			msg = module.exports.removeLineBreaksAndDoubleSpaces(msg);
-			var msg = htmlEncode.htmlEncode(msg);
-			return 'Type=' + name + ', Message=' + msg;
+	prettyPrintError: function (errorObject) {
+		if (errorObject) {
+			return '<Response><ResponseFault description="nhs-ssb-proxy error - ' +  errorObject.name + '-' + errorObject.message + '" code="1002"/></Response>';
 		} else {
-			return 'Type=not-set, Message=not-set';
+			return '<Response><ResponseFault description="nhs-ssb-proxy error" code="1002"/></Response>'
 		}
 	}
 	, //next function

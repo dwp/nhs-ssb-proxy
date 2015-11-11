@@ -45,23 +45,21 @@ module.exports = {
 			
 			var queueItem = {
 				'correlationId': correlationId,
-				'token' : tokenVal 
+				'token' : tokenVal,
+				'request': req,
+				'response': res
 				};
 				
 			commonTools.consoleDumpText('debug', 'queryRoleAssertion:Starting' , queueItem);
 			
-			//Add the request response to the queue item 
-			queueItem.request = req;
-			queueItem.response = res;
-			
 			simpleQueue.push( queueItem );
 			
-			commonTools.consoleDumpText('debug', 'queryRoleAssertion:QueueLength' , queueItem);
+			commonTools.consoleDumpText('debug', 'queryRoleAssertion:QueueLength' , simpleQueue.length);
 			
 		} catch (err) {
 			commonTools.consoleDumpError('error', 'queryRoleAssertion.error' , err);
 			res.statusCode = 500;
-			res.setHeader('Content-Type', 'application/json');
+			res.setHeader('Content-Type', 'application/xml');
 			res.send( { 'error' : 'Error in queryRoleAssertion: ' + commonTools.prettyPrintError(err) } );
 			return;
 		}
@@ -69,14 +67,14 @@ module.exports = {
 	, //next function
 
 	dequeueFromBridgeToWorker: function(req, res) {
-		commonTools.systemEvent('Most recent Worker poll');
+		
 		var messagesForWorker = [];
 		var itemsToGiveToWorker = simpleQueue.filter(function notSent(val) { return val.sent == false });
 
 		itemsToGiveToWorker.forEach(function(val, index, array) {
 			messagesForWorker.push( {
 				'correlationId': val.correlationId,
-				'gdsPayload' : val.gdsPayload
+				'token' : val.gdsPayload
 			});
 			val.sent = true;
 		});
@@ -89,7 +87,8 @@ module.exports = {
 
 		res.setHeader('Content-Type', 'application/json');
 		res.send(textToSend);
-		commonTools.systemEventData('Most recent Worker poll status', 'OK: Sent ' + messagesForWorker.length);
+		
+		commonTools.consoleDumpText('debug', 'queryRoleAssertion:QueueLength' , messagesForWorker.length);
 	}
 	, //next function
 
