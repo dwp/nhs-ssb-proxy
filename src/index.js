@@ -12,12 +12,14 @@ var PORT = (parseInt(configJson.port)) ? parseInt(configJson.port) : 9001;
 // App and extensions
 var app = express();
 
+app.use(commonTools.expressRawBodyFromData);
+
 //API
 app.get('/systemStatus', bridgeService.systemStatusPage);
 
 app.get('/saml/RoleAssertion', bridgeService.queryRoleAssertion);
 
-app.post('/dequeueFromBridgeToWorker', bridgeService.dequeueFromBridgeToWorker);
+app.get('/dequeueFromBridgeToWorker', bridgeService.dequeueFromBridgeToWorker);
 
 app.post('/enqueueFromWorkerBackToBridge', bridgeService.enqueueFromWorkerBackToBridge);
 

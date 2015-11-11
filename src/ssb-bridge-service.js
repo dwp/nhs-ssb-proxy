@@ -47,7 +47,8 @@ module.exports = {
 				'correlationId': correlationId,
 				'token' : tokenVal,
 				'request': req,
-				'response': res
+				'response': res,
+				'sent': false
 				};
 				
 			commonTools.consoleDumpText('debug', 'queryRoleAssertion:Starting' , queueItem);
@@ -74,7 +75,7 @@ module.exports = {
 		itemsToGiveToWorker.forEach(function(val, index, array) {
 			messagesForWorker.push( {
 				'correlationId': val.correlationId,
-				'token' : val.gdsPayload
+				'token' : val.token
 			});
 			val.sent = true;
 		});
@@ -88,15 +89,16 @@ module.exports = {
 		res.setHeader('Content-Type', 'application/json');
 		res.send(textToSend);
 		
-		commonTools.consoleDumpText('debug', 'queryRoleAssertion:QueueLength' , messagesForWorker.length);
+		commonTools.consoleDumpText('debug', 'dequeueFromBridgeToWorker:QueueLength' , messagesForWorker.length);
 	}
 	, //next function
 
 	enqueueFromWorkerBackToBridge: function(req, res) {
+		
 		var inputText = req.rawBody;
-		commonTools.systemEvent('Most recent Worker response');
+		
 		try {
-			var parsedBodyWithPdsData = JSON.parse(inputText);
+			var parsedResponse = JSON.parse(inputText);
 		} catch (err) {
 			commonTools.systemEvent('Most recent Worker response error');
 			commonTools.systemEventData('Most recent Worker response status', 'ERROR processing json: ' + commonTools.prettyPrintError(err));
@@ -107,42 +109,26 @@ module.exports = {
 			return;
 		}
 
-		commonTools.consoleDumpObject('debug', 'enqueueFromWorkerBackToBridge:Starting' , parsedBodyWithPdsData);
+		commonTools.consoleDumpObject('debug', 'enqueueFromWorkerBackToBridge:Starting' , parsedResponse);
 
-		var itemsBackFromWorker = simpleQueue.filter(function filterById(val) { return val.correlationId == parsedBodyWithPdsData.correlationId }); //TODO - should only ever be 0 or 1 returned
+		var itemsBackFromWorker = simpleQueue.filter(function filterById(val) { return val.correlationId == parsedResponse.correlationId }); //TODO - should only ever be 0 or 1 returned
 
 		if ( itemsBackFromWorker.length == 0) {
-			commonTools.consoleDumpText('error', 'enqueueFromWorkerBackToBridge', 'ID not found: ' + parsedBodyWithPdsData.correlationId)
+			commonTools.consoleDumpText('error', 'enqueueFromWorkerBackToBridge', 'ID not found: ' + parsedResponse.correlationId)
 		} else if (itemsBackFromWorker.length > 1){
-			commonTools.consoleDumpText('error', 'enqueueFromWorkerBackToBridge', 'Too many matches found for ID: ' + parsedBodyWithPdsData.correlationId)
+			commonTools.consoleDumpText('error', 'enqueueFromWorkerBackToBridge', 'Too many matches found for ID: ' + parsedResponse.correlationId)
 		}
 
 		commonTools.removeMatchingItems(simpleQueue, 'sent', true);
 		commonTools.systemEventData('Stub GDS messages outstanding', '' + simpleQueue.length);
 
 		var queueItem = itemsBackFromWorker[0];
-		parsedBodyWithPdsData.requestDateAndTime = queueItem.requestDateAndTime;
-		parsedBodyWithPdsData.requestMessageIdentifier = queueItem.correlationId;
 
-		var pdsDataToSaveMap = {
-				requestMessageIdentifier : parsedBodyWithPdsData.requestMessageIdentifier,
-				requestDateAndTime : parsedBodyWithPdsData.requestDateAndTime,
-				hashedReferenceIdentifier : parsedBodyWithPdsData.gdsPayload.hashedReferenceIdentifier,
-				nhsNumber : parsedBodyWithPdsData.pdsData.nhsNumber,
-				practiceCode : parsedBodyWithPdsData.pdsData.practiceCode
-			};
-		commonTools.consoleDumpObject('debug', 'enqueueFromWorkerBackToBridge.pdsDataToSaveMap', pdsDataToSaveMap);
-
-		var textOfDataSentBack = JSON.stringify(parsedBodyWithPdsData);
-
-		queueItem.response.setHeader('Content-Type', 'application/json');
-		queueItem.response.send(parsedBodyWithPdsData); //back to GDS
+		queueItem.response.setHeader('Content-Type', 'application/xml');
+		queueItem.response.send(parsedResponse.payload); //back to GDS
 		commonTools.systemEventData('Most recent Stub GDS status', 'OK');
-
-		commonTools.consoleDumpText('info', 'enqueueFromWorkerBackToBridge:Ending', queueItem.correlationId);
-		res.send(200); //back to worker service
-		commonTools.systemEventData('Most recent Worker response status', 'OK');
-		commonTools.systemEventPlusOne('Stub GDS messages processed');
+		
+		res.send(200); //back to worker servic
 	}
 
 }; //end exported methods
