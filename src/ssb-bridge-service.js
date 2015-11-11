@@ -30,14 +30,6 @@ module.exports = {
 	}
 	, //next function
 
-	/* TO ADD BACK IN WHEN WE GET THE REAL GDS:
-			'Most recent Real GDS message' : 'n/a',
-			'Most recent Real GDS error' : 'n/a',
-			'Most recent Real GDS status' : 'n/a',
-			'Real GDS messages received' : 0,
-			'Real GDS messages processed' : 0,
-			'Real GDS messages outstanding' : 0,
-	*/
 	systemStatusPage: function (req, res) {
 		res.setHeader('Content-Type', 'text/html');
 		res.send("<html><head></head><body><p>Running</p></body></head>");
@@ -47,28 +39,30 @@ module.exports = {
 	queryRoleAssertion: function(req, res) {
 		try {
 			var correlationId = commonTools.generateGuid();
-			var tokenVal = "";
+			var tokenVal = req.query.token;
 			
-			var gdsQueueItem = {
+			commonTools.consoleDumpText('debug', 'Token' , tokenVal);
+			
+			var queueItem = {
 				'correlationId': correlationId,
 				'token' : tokenVal 
 				};
 				
-			commonTools.consoleDumpObject('debug', 'matchIdentityFromGDS:Starting' , gdsQueueItem);
-			gdsQueueItem.request = req;
-			gdsQueueItem.response = res;
+			commonTools.consoleDumpText('debug', 'queryRoleAssertion:Starting' , queueItem);
 			
-			simpleQueue.push( gdsQueueItem );
+			//Add the request response to the queue item 
+			queueItem.request = req;
+			queueItem.response = res;
 			
-			commonTools.systemEventData('Stub GDS messages outstanding', '' + simpleQueue.length);
+			simpleQueue.push( queueItem );
+			
+			commonTools.consoleDumpText('debug', 'queryRoleAssertion:QueueLength' , queueItem);
 			
 		} catch (err) {
-			commonTools.systemEvent('Most recent Stub GDS error');
-			commonTools.systemEventData('Most recent Stub GDS status', 'ERROR in matchIdentityFromGDS: ' + commonTools.prettyPrintError(err));
-			commonTools.consoleDumpError('error', 'matchIdentityFromGDS.error' , err);
+			commonTools.consoleDumpError('error', 'queryRoleAssertion.error' , err);
 			res.statusCode = 500;
 			res.setHeader('Content-Type', 'application/json');
-			res.send( { 'error' : 'Error in matchIdentityFromGDS: ' + commonTools.prettyPrintError(err) } );
+			res.send( { 'error' : 'Error in queryRoleAssertion: ' + commonTools.prettyPrintError(err) } );
 			return;
 		}
 	}
@@ -139,10 +133,8 @@ module.exports = {
 				practiceCode : parsedBodyWithPdsData.pdsData.practiceCode
 			};
 		commonTools.consoleDumpObject('debug', 'enqueueFromWorkerBackToBridge.pdsDataToSaveMap', pdsDataToSaveMap);
-		redisUtils.createOrUpdateDataResult(pdsDataToSaveMap, res, commonTools.simpleErrorHandler('matchIdentityFromGDS.enqueueFromWorkerBackToBridge.save'));
 
 		var textOfDataSentBack = JSON.stringify(parsedBodyWithPdsData);
-		redisUtils.pushMessageHistoryItem('matchIdentityFromGDS-end', textOfDataSentBack, commonTools.simpleErrorHandler('matchIdentityFromGDS.pushMessageHistoryItem.end'));
 
 		queueItem.response.setHeader('Content-Type', 'application/json');
 		queueItem.response.send(parsedBodyWithPdsData); //back to GDS

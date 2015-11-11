@@ -325,6 +325,54 @@ module.exports = {
 	dateForNow: function (){
 		return new Date();
 	}
+	,
+		/**
+	* Converts the given Date[time] onbject to an xs:dateTime format.
+	* @returns {String} The generated xsDateTime.
+	* @example 2015-12-31T15:26:57
+	* @link http://forums.whirlpool.net.au/archive/1218957
+	*/
+	xsDateTimeFormat: function (sourceDate) {
+		return module.exports.xsDateFormat(sourceDate) + 'T' + module.exports.xsTimeFormat(sourceDate);
+	}
+	, //next function
+
+	/**
+	* Converts the given Date[time] onbject to an xs:dateTime format.
+	* @returns {String} The generated xsDateTime.
+	* @example 2015-12-31T15:26:57
+	* @link http://forums.whirlpool.net.au/archive/1218957
+	*/
+	xsDateFormat: function (sourceDate, onlyDays) {
+		var yyyy = sourceDate.getFullYear();
+		var mm1  = pad(sourceDate.getMonth()+1);
+		var dd   = pad(sourceDate.getDate());
+		return yyyy + '-' + mm1 + '-' + dd ;
+	}
+	, //next function
+
+	/**
+	* Converts the given Date[time] onbject to an xs:dateTime format.
+	* @returns {String} The generated xsDateTime.
+	* @example 2015-12-31T15:26:57
+	* @link http://forums.whirlpool.net.au/archive/1218957
+	*/
+	xsTimeFormat: function (sourceDate) {
+		var hh   = pad(sourceDate.getHours());
+		var mm2  = pad(sourceDate.getMinutes());
+		var ss   = pad(sourceDate.getSeconds());
+		return hh + ':' + mm2 + ':' +ss;
+	}
+	, //next function
+
+	/**
+	* generates the system time in an xs:dateTime format.
+	* @returns {String} The generated xsDateTime.
+	* @example 2015-12-31T15:26:57
+	*/
+	nowAsXsDateTimeFormat: function (){
+		return module.exports.xsDateTimeFormat(module.exports.dateForNow());
+	}
 
 }; //end exported methods
 

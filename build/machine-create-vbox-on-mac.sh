@@ -12,5 +12,4 @@ createVirtualMachine $ROOTMACHINENAME
 addMountPoints $ROOTMACHINENAME 
 addSharesPoints $ROOTMACHINENAME $DOCKERFILES
 setEnvVariables $ROOTMACHINENAME
-configureRemoteRegistry $ROOTMACHINENAME
 

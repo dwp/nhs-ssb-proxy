@@ -46,7 +46,7 @@
         <div class="form-group">
           <label for="server" class="col-sm-2 control-label">Name or IP</label>
           <div class="col-sm-10">
-            <input type="text" class="form-control" id="targetServer" value="gas.lh.iam.spine2.ncrs.nhs.uk"></input>
+            <input type="text" class="form-control" id="targetServer" value="localhost:9001"></input>
           </div>
         </div>
       </form>
@@ -106,7 +106,7 @@
         $('#searchbutton').click(function() {
             $('#searchbutton').prop('disabled', true);
 
-            var targetUrl = 'https://' + $('#targetServer').val() + '/saml/RoleAssertion?token=' + $('#ssotoken').val()
+            var targetUrl = 'http://' + $('#targetServer').val() + '/saml/RoleAssertion?token=' + $('#ssotoken').val()
             console.log(targetUrl)
 
             $.ajax({

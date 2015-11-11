@@ -15,7 +15,7 @@ var app = express();
 //API
 app.get('/systemStatus', bridgeService.systemStatusPage);
 
-app.post('/saml/RoleAssertion', bridgeService.queryRoleAssertion);
+app.get('/saml/RoleAssertion', bridgeService.queryRoleAssertion);
 
 app.post('/dequeueFromBridgeToWorker', bridgeService.dequeueFromBridgeToWorker);
 
