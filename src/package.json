@@ -1,0 +1,24 @@
+{
+	"main": "index.js",
+	"name": "nhs-ssb-proxy",
+	"private": true,
+	"version": "0.1.9004",
+	"description": "nhs-ssb-proxy",
+	"author": "HSCIC",
+	"dependencies": {
+		"express": "3.2.4",
+		"htmlencode": "0.0.4",
+		"redis": "1.0.0",
+		"xml2js": "0.4.12"
+	},
+	"devDependencies": {
+		"mocha": "2.2.4",
+		"nconf": "0.7.2",
+		"node-mocks-http": "1.4.4",
+		"supertest": "1.1.0",
+		"unit.js": "2.0.0"
+	},
+	"scripts": {
+		"start": "node index.js"
+	}
+}

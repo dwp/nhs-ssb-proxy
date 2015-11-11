@@ -1,0 +1,8 @@
+{
+	"project": "nhs-ssb-proxy",
+	"name": "nhs-ssb-proxy-service",
+	"description": "",
+	"author": "DWP/HSCIC",
+	"debugLevel": "debug",
+	"port": 9001
+}
