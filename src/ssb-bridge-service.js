@@ -45,7 +45,7 @@ module.exports = {
 			
 			var queueItem = {
 				'correlationId': correlationId,
-				'token' : tokenVal,
+				'token' :  encodeURIComponent(tokenVal),
 				'request': req,
 				'response': res,
 				'sent': false
